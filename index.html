@@ -121,6 +121,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .check.on::before{background:var(--accent);border-color:var(--accent)}
 .check.on::after{content:"";position:absolute;left:17px;top:13px;width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .addbtn{display:block;width:100%;margin-top:8px;padding:13px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--accent);font-weight:600}
+.addbtn[hidden]{display:none}
 .foot{margin:22px 4px 0;color:var(--muted);font-size:13px;text-align:center}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:22px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,transparent,var(--bg) 45%);pointer-events:none}
@@ -278,6 +279,8 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       <div><span class="k">Días restantes</span><b id="mc-days"></b></div>
     </div>
   </button>
+
+  <button class="addbtn" id="addmesada" type="button" hidden style="margin-top:12px">+ Agregar mi mesada<br><span style="font-weight:400;font-size:13px;color:var(--muted)">El monto que te asignas para gastar día a día</span></button>
 
   <section class="sec">
     <div class="sec-h"><h2>Por pagar</h2><span id="pend-total"></span></div>
@@ -605,6 +608,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     $('#legend').innerHTML=lg;
 
     var mc=$('#mcard');mc.hidden=!a.item;
+    $('#addmesada').hidden=!!a.item;
     if(a.item){
       var frac=a.budget>0?a.used/a.budget:(a.used>0?1:0);
       mc.className='mcard'+(a.over?' over':(frac>=0.75?' warn':''));
@@ -905,7 +909,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   function openQuick(o){
     o=o||{};
     var srcs=sources();
-    if(!srcs.length){toast('Agrega una categoría primero');return;}
+    if(!srcs.length){toast('Agrega tu mesada o una categoría primero');return;}
     qEdit=o.edit||null;
     $('#toast').classList.remove('show');
     var e=qEdit?data.entries.filter(function(x){return x.id===qEdit;})[0]:null;
@@ -974,6 +978,15 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     $('#sheet').hidden=false;
     if(isInc||!it)setTimeout(function(){(isInc?$('#f-amount'):$('#f-name')).focus();},60);
   }
+  function openMesadaSheet(){
+    openSheet('fixed',null);
+    sheet.allow=true;
+    $('#sh-title').textContent='Agregar mi mesada';
+    $('#amt-lbl').textContent='Monto de la mesada';
+    $('#f-name').value='Mesada';
+    $('#g-card').hidden=true;
+    setTimeout(function(){$('#f-amount').focus();},80);
+  }
   function closeSheet(){$('#sheet').hidden=true;sheet=null;}
   function commit(){
     if(!sheet)return;
@@ -984,7 +997,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       var it=sheet.id?list.filter(function(x){return x.id===sheet.id;})[0]:null;
       var f={name:$('#f-name').value.trim()||'Sin nombre'};
       if(kind==='fixed'){f.amount=num($('#f-amount').value);f.card=$('#f-card').value.trim();}
-      if(it)Object.assign(it,f);else{f.id=genId('i');if(kind==='fixed')f.paid=false;list.push(f);}
+      if(it)Object.assign(it,f);else{f.id=genId('i');if(kind==='fixed'){f.paid=false;if(sheet.allow)f.allow=true;}list.push(f);}
     }
     closeSheet();save();
   }
@@ -1109,6 +1122,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   });
   ['pointerup','pointerleave','pointercancel'].forEach(function(ev){$('#q-banks').addEventListener(ev,function(){clearTimeout(lpTimer);});});
   $('#fab').onclick=function(){openQuick({});};
+  $('#addmesada').onclick=openMesadaSheet;
   $('#p-add').onclick=function(){openQuick({src:pSrc});};
   $('#p-edit').onclick=function(){
     if(pSrc==='allow'){var it=allowItem();if(it)openSheet('fixed',it.id);}
