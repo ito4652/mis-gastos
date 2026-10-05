@@ -121,7 +121,6 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .check.on::before{background:var(--accent);border-color:var(--accent)}
 .check.on::after{content:"";position:absolute;left:17px;top:13px;width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .addbtn{display:block;width:100%;margin-top:8px;padding:13px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--accent);font-weight:600}
-.addbtn[hidden]{display:none}
 .foot{margin:22px 4px 0;color:var(--muted);font-size:13px;text-align:center}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:22px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,transparent,var(--bg) 45%);pointer-events:none}
@@ -235,12 +234,39 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .cs.none .cs-h span{color:var(--muted)}
 #p-cats{margin-top:6px}
 
+.dt{display:flex;flex-direction:column;gap:1px}
+.dt small{font-weight:400;font-size:13px;color:var(--muted)}
+.dt small:empty{display:none}
+.dseg{display:flex;background:var(--chip-bg);border-radius:14px;padding:3px;margin:8px 0 10px}
+.dseg button{flex:1;border:0;background:transparent;border-radius:11px;padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-weight:500}
+.dseg button b{font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.dseg button.on{background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.14);color:var(--ink);font-weight:600}
+.dbar{height:5px;border-radius:99px;background:var(--chip-bg);overflow:hidden;margin-top:6px}
+.dbar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.row.dim{color:var(--muted)}
+.d-pay{display:flex;gap:8px;margin:14px 0 4px}
+.d-pay input{flex:1;min-width:0;font:inherit;font-size:17px;padding:12px 13px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.d-pay button{border:0;border-radius:12px;padding:0 18px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.dx{border:0;background:transparent;color:var(--muted);font-size:15px;width:40px;height:36px;margin:-6px -6px -6px 0}
+.ent.static{cursor:default}
+.ent.static:active{background:transparent}
+.d-badge{display:inline-block;background:var(--chip-on);color:var(--chip-on-ink);border-radius:99px;padding:3px 10px;font-size:13px;font-weight:600;margin-left:6px}
+
+.gh{display:flex;align-items:center;gap:10px;padding:12px 14px 4px}
+.gh+.row{border-top:0}
+.row+.gh{border-top:1px solid var(--line)}
+.gh .name{font-family:"Bricolage Grotesque",Georgia,serif;font-size:17px}
+.gh .amt{font-family:"Bricolage Grotesque",Georgia,serif;font-size:17px}
+.row.sub-row{padding-left:26px;min-height:46px}
+.row.sub-row .name{font-weight:500;font-size:15px}
+
 .backup{margin-top:20px;padding:14px 16px;border:1px solid var(--line);background:var(--card);border-radius:16px}
 .backup .bt{font-weight:600;margin-bottom:2px}
 .backup .note{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .b-btns{display:flex;gap:8px}
 .b-btns button{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;font-weight:600;color:var(--accent)}
 .skip{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--muted);padding:10px;font-weight:500}
+.addbtn[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -305,6 +331,14 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     <p class="note">Solo informativo: gastos anotados y fijos pagados con tarjeta asignada.</p>
   </details>
 
+  <details class="btab" id="dtab">
+    <summary><div class="dt"><span>Deudas</span><small id="dtab-sub"></small></div><i class="mchev"></i></summary>
+    <div class="dseg" id="d-seg"></div>
+    <ul class="list" id="d-list"></ul>
+    <button class="addbtn" id="d-add" type="button">+ Agregar deuda</button>
+    <div id="d-done"></div>
+  </details>
+
   <div class="backup">
     <div class="bt">Respaldo de tus datos</div>
     <p class="note">Tus gastos se guardan solo en este teléfono. Exporta un respaldo de vez en cuando; también sirve para pasar tus datos a otro teléfono.</p>
@@ -349,6 +383,34 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="s-title">
     <div class="p-top"><h3 id="s-title"></h3><button class="xbtn" data-sclose aria-label="Cerrar">✕</button></div>
     <div id="s-body"></div>
+  </div>
+</div>
+
+<div class="sheet" id="dsheet" hidden>
+  <div class="scrim" data-dclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="d-title">
+    <div class="p-top"><h3 id="d-title"></h3><button class="xbtn" data-dclose aria-label="Cerrar">✕</button></div>
+    <div id="d-hero"></div>
+    <div class="d-pay" id="d-payrow"><input id="d-pay" inputmode="numeric" autocomplete="off" placeholder="Monto del abono"><button id="d-payb" type="button">Abonar</button></div>
+    <div class="a-list-h">Movimientos</div>
+    <ul class="list" id="d-pays" style="margin-top:8px"></ul>
+    <button class="addbtn" id="d-edit" type="button">Editar deuda</button>
+  </div>
+</div>
+
+<div class="sheet" id="dform" hidden>
+  <div class="scrim" data-dfclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="df-title">
+    <h3 id="df-title" style="margin-bottom:14px"></h3>
+    <label class="fld"><span id="df-plbl">Persona</span><input id="df-person" autocomplete="off" placeholder="Ej: Sofi"></label>
+    <div class="notes" id="df-people" style="margin:-4px 0 12px"></div>
+    <label class="fld"><span>Monto de la deuda</span><input id="df-amount" inputmode="numeric" autocomplete="off" placeholder="0"></label>
+    <label class="fld"><span>Nota (opcional)</span><input id="df-note" autocomplete="off" placeholder="Ej: préstamo para el arriendo"></label>
+    <label class="fld"><span>Fecha</span><input id="df-date" type="date"></label>
+    <div class="actions">
+      <button class="btn-del" id="df-del" type="button" hidden>Eliminar</button>
+      <button class="btn-save" id="df-save" type="button">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -464,14 +526,17 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   function setLoading(b){$('#app').className='app'+(b?' loading':'');}
   function toast(t){var el=$('#toast');el.textContent=t;el.classList.remove('act');el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2600);}
   var undoState=null;
-  function toastUndo(msg){
+  var undoFn=null;
+  function toastUndo(msg,fn){
+    undoFn=fn||null;
     var el=$('#toast');el.textContent='';
     var sp=document.createElement('span');sp.textContent=msg;
     var b=document.createElement('button');b.type='button';b.className='toast-btn';b.textContent='Deshacer';b.onclick=doUndo;
     el.appendChild(sp);el.appendChild(b);el.classList.add('show','act');
-    clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show','act');undoState=null;},7000);
+    clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show','act');undoState=null;undoFn=null;},7000);
   }
   function doUndo(){
+    if(undoFn){var f=undoFn;undoFn=null;$('#toast').classList.remove('show','act');f();return;}
     if(!undoState||undoState.key!==monthKey)return;
     data=undoState.data;undoState=null;
     $('#toast').classList.remove('show','act');
@@ -640,6 +705,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       return '<li class="row" tabindex="0" role="button" data-open="'+esc(v.id)+'"><div class="main"><span class="name">'+esc(v.name)+'</span></div><span class="amt'+(tot?'':' muted')+'">'+(privG?MASK:(tot?money(tot):'Sin gastos'))+'</span><span class="chev">›</span></li>';
     }).join(''):'<li class="row empty">Aún no hay categorías</li>';
     renderBankTab();
+    renderDebts();
     if(!$('#psheet').hidden)renderPanel();
   }
 
@@ -674,6 +740,168 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     });
     if(bt.none.n)h+='<li class="row static"><div class="main"><span class="name muted">Sin banco</span><span class="sub">'+bt.none.n+' '+(bt.none.n===1?'movimiento':'movimientos')+'</span></div><span class="amt muted">'+(privG?MASK:money(bt.none.amt))+'</span></li>';
     $('#bank-list').innerHTML=h||'<li class="row static empty">Aún no hay bancos. Agrégalos al anotar un gasto.</li>';
+  }
+
+  /* ---------- deudas ---------- */
+  var debts={items:[]}, dDir='owe', dTimer=null, dInflight=0, dLast=0, dOpenId=null, dEditId=null;
+  function normDebts(d){
+    d=JSON.parse(JSON.stringify(d||{}));
+    return {items:(Array.isArray(d.items)?d.items:[]).map(function(i){i.payments=Array.isArray(i.payments)?i.payments:[];i.amount=Number(i.amount)||0;return i;})};
+  }
+  try{var dl=localStorage.getItem('gastos:debts');if(dl)debts=normDebts(JSON.parse(dl));}catch(e){}
+  function dLocal(){try{localStorage.setItem('gastos:debts',JSON.stringify(debts));}catch(e){}}
+  function debtInfo(i){var paid=sum(i.payments),saldo=Math.max(0,i.amount-paid);return {paid:paid,saldo:saldo};}
+  function debtTotals(dir){var t=0;debts.items.forEach(function(i){if(i.dir===dir)t+=debtInfo(i).saldo;});return t;}
+  function findDebt(id){return debts.items.filter(function(i){return i.id===id;})[0]||null;}
+  function fmtDate(d){var p=String(d||'').split('-');if(p.length<3)return '';var s=(+p[2])+' '+MS[+p[1]-1];return (+p[0]!==new Date().getFullYear())?s+' '+p[0]:s;}
+  function flushDebts(){
+    dTimer=null;
+    if(!db||!uid)return;
+    var payload=JSON.parse(JSON.stringify(debts));
+    dInflight++;
+    chain=chain.then(function(){return db.collection('data/users/'+uid).doc('debts').set(payload);})
+      .then(function(){dInflight--;dLast=Date.now();})
+      .catch(function(){dInflight--;dLast=Date.now();});
+  }
+  function saveDebts(){
+    dLocal();renderDebts();
+    if(!db||!uid)return;
+    clearTimeout(dTimer);dTimer=setTimeout(flushDebts,350);
+  }
+  function subscribeDebts(){
+    if(!db||!uid)return;
+    try{
+      db.collection('data/users/'+uid).doc('debts').onSnapshot(function(snap){
+        if(dTimer||dInflight>0||Date.now()-dLast<1500)return;
+        if(snap.exists){debts=normDebts(snap.data());dLocal();renderDebts();}
+        else if(debts.items.length){flushDebts();}
+      },function(){});
+    }catch(e){}
+  }
+  function renderDebts(){
+    var to=debtTotals('owe'), tm=debtTotals('owed'), parts=[];
+    if(to>0)parts.push('Debo '+(privG?MASK:money(to)));
+    if(tm>0)parts.push('Me deben '+(privG?MASK:money(tm)));
+    $('#dtab-sub').textContent=parts.join(' · ');
+    $('#d-seg').innerHTML='<button type="button" data-ddir="owe" class="'+(dDir==='owe'?'on':'')+'"><span>Debo</span><b>'+(privG?MASK:money(to))+'</b></button><button type="button" data-ddir="owed" class="'+(dDir==='owed'?'on':'')+'"><span>Me deben</span><b>'+(privG?MASK:money(tm))+'</b></button>';
+    var mine=debts.items.filter(function(i){return i.dir===dDir;});
+    var act=mine.filter(function(i){return debtInfo(i).saldo>0;}).sort(function(a,b){return debtInfo(b).saldo-debtInfo(a).saldo;});
+    var done=mine.filter(function(i){return debtInfo(i).saldo===0;});
+    var groups={},order=[];
+    act.forEach(function(i){
+      var k=String(i.person||'').trim().toLowerCase();
+      if(!groups[k]){groups[k]={label:i.person,items:[],total:0};order.push(k);}
+      groups[k].items.push(i);groups[k].total+=debtInfo(i).saldo;
+    });
+    order.sort(function(x,y){return groups[y].total-groups[x].total;});
+    function singleRow(i){
+      var inf=debtInfo(i), pct=i.amount>0?Math.min(100,inf.paid/i.amount*100):0;
+      return '<li class="row" tabindex="0" role="button" data-dopen="'+esc(i.id)+'"><div class="main"><span class="name">'+esc(i.person)+'</span><span class="sub">de '+(privG?MASK:money(i.amount))+(i.note?' · '+esc(i.note):'')+'</span>'+(inf.paid>0?'<div class="dbar"><i style="width:'+pct.toFixed(1)+'%"></i></div>':'')+'</div><span class="amt">'+(privG?MASK:money(inf.saldo))+'</span><span class="chev">›</span></li>';
+    }
+    $('#d-list').innerHTML=order.length?order.map(function(k){
+      var g=groups[k];
+      if(g.items.length===1)return singleRow(g.items[0]);
+      return '<li class="gh"><div class="main"><span class="name">'+esc(g.label)+'</span><span class="sub">'+g.items.length+' deudas</span></div><span class="amt">'+(privG?MASK:money(g.total))+'</span></li>'
+        +g.items.slice().sort(function(x,y){return debtInfo(y).saldo-debtInfo(x).saldo;}).map(function(i){
+          var inf=debtInfo(i), pct=i.amount>0?Math.min(100,inf.paid/i.amount*100):0;
+          return '<li class="row sub-row" tabindex="0" role="button" data-dopen="'+esc(i.id)+'"><div class="main"><span class="name">'+esc(i.note||('Deuda del '+fmtDate(i.date)))+'</span>'+(inf.paid>0?'<div class="dbar"><i style="width:'+pct.toFixed(1)+'%"></i></div>':'')+'</div><span class="amt">'+(privG?MASK:money(inf.saldo))+'</span><span class="chev">›</span></li>';
+        }).join('');
+    }).join(''):'<li class="row empty">'+(dDir==='owe'?'No tienes deudas pendientes':'Nadie te debe por ahora')+'</li>';
+    $('#d-add').textContent=dDir==='owe'?'+ Agregar deuda que tengo':'+ Agregar deuda que me deben';
+    $('#d-done').innerHTML=done.length?'<details class="day" id="d-donedet"><summary><span>Saldadas ('+done.length+')</span></summary><ul class="list" style="margin-top:6px">'+done.map(function(i){
+      return '<li class="row dim" tabindex="0" role="button" data-dopen="'+esc(i.id)+'"><div class="main"><span class="name">'+esc(i.person)+'</span><span class="sub">'+esc(i.note||fmtDate(i.date))+'</span></div><span class="amt">'+(privG?MASK:money(i.amount))+'</span><span class="chev">›</span></li>';
+    }).join('')+'</ul></details>':'';
+    if(!$('#dsheet').hidden)renderDebtDetail();
+  }
+  function openDebt(id){dOpenId=id;renderDebtDetail();if(dOpenId)$('#dsheet').hidden=false;}
+  function closeDebt(){$('#dsheet').hidden=true;dOpenId=null;}
+  function renderDebtDetail(){
+    var it=findDebt(dOpenId);
+    if(!it){closeDebt();return;}
+    var inf=debtInfo(it), closed=inf.saldo===0&&it.amount>0, owe=it.dir==='owe';
+    $('#d-title').textContent=it.person;
+    var pct=it.amount>0?Math.min(100,inf.paid/it.amount*100):0;
+    $('#d-hero').innerHTML='<div class="a-lbl">'+(owe?'Le debes a '+esc(it.person):esc(it.person)+' te debe')+(closed?'<span class="d-badge">Saldada</span>':'')+'</div>'
+      +'<div class="a-big'+(closed?' plain':'')+'">'+(privG?'$ ••••••':money(inf.saldo))+'</div>'
+      +'<div class="a-sub">de '+(privG?MASK:money(it.amount))+' · abonado '+(privG?MASK:money(inf.paid))+'</div>'
+      +(privG?'':'<div class="a-bar"><i style="width:'+pct.toFixed(1)+'%"></i></div>')
+      +(it.note?'<div class="a-sub" style="margin-top:6px">'+esc(it.note)+'</div>':'')
+      +(function(){
+        var pk=String(it.person||'').trim().toLowerCase();
+        var sib=debts.items.filter(function(x){return x.dir===it.dir&&String(x.person||'').trim().toLowerCase()===pk&&debtInfo(x).saldo>0;});
+        if(sib.length<2||closed||privG)return '';
+        var tot=sib.reduce(function(t,x){return t+debtInfo(x).saldo;},0);
+        return '<div class="a-tip">Con '+esc(it.person)+' tienes '+sib.length+' deudas · total '+money(tot)+'</div>';
+      })();
+    $('#d-payrow').hidden=closed;
+    $('#d-pay').placeholder=owe?'Monto que pagas':'Monto que te abonan';
+    $('#d-payb').textContent=owe?'Pagar':'Recibir';
+    var rows='<li class="ent static"><span class="n"><span class="t">Deuda inicial</span><span class="m">'+esc(fmtDate(it.date))+'</span></span><span>'+(privG?MASK:money(it.amount))+'</span></li>';
+    it.payments.slice().reverse().forEach(function(p){
+      rows+='<li class="ent static"><span class="n"><span class="t">'+(owe?'Pago':'Abono')+'</span><span class="m">'+esc(fmtDate(p.date))+'</span></span><span>− '+(privG?MASK:money(p.amount))+'</span><button class="dx" type="button" data-pdel="'+esc(p.id)+'" aria-label="Quitar este movimiento">✕</button></li>';
+    });
+    $('#d-pays').innerHTML=rows;
+  }
+  function addPayment(){
+    var it=findDebt(dOpenId);if(!it)return;
+    var amt=num($('#d-pay').value);
+    if(!amt){$('#d-pay').focus();return;}
+    var saldo=debtInfo(it).saldo;
+    if(saldo<=0)return;
+    var capped=amt>saldo;if(capped)amt=saldo;
+    it.payments.push({id:genId('p'),amount:amt,date:today()});
+    $('#d-pay').value='';
+    saveDebts();
+    var left=debtInfo(it).saldo;
+    toast(left===0?'Deuda saldada':(capped?'Se registró solo el saldo restante':'Registrado')+(privG?'':' · quedan '+money(left)));
+  }
+  function removePayment(pid){
+    var it=findDebt(dOpenId);if(!it)return;
+    var snap=JSON.parse(JSON.stringify(debts));
+    it.payments=it.payments.filter(function(p){return p.id!==pid;});
+    saveDebts();toastUndo('Movimiento quitado',function(){debts=snap;saveDebts();});
+  }
+  function openDForm(id){
+    dEditId=id||null;
+    var it=id?findDebt(id):null, owe=(it?it.dir:dDir)==='owe';
+    $('#df-title').textContent=it?'Editar deuda':(owe?'Nueva deuda que tengo':'Nueva deuda que me deben');
+    $('#df-plbl').textContent=owe?'A quién le debo':'Quién me debe';
+    $('#df-person').value=it?it.person:'';
+    $('#df-amount').value=it?dots(it.amount):'';
+    $('#df-note').value=it?(it.note||''):'';
+    $('#df-date').value=it?it.date:today();
+    $('#df-del').hidden=!it;
+    renderPeople();
+    $('#dform').hidden=false;
+    if(!it)setTimeout(function(){$('#df-person').focus();},80);
+  }
+  function renderPeople(){
+    var it=dEditId?findDebt(dEditId):null, dir=it?it.dir:dDir, cnt={}, lab={};
+    debts.items.forEach(function(i){
+      if(i.dir!==dir)return;
+      var k=String(i.person||'').trim().toLowerCase();if(!k)return;
+      cnt[k]=(cnt[k]||0)+1;lab[k]=lab[k]||i.person;
+    });
+    var cur=$('#df-person').value.trim().toLowerCase();
+    $('#df-people').innerHTML=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];}).slice(0,8).map(function(k){
+      return '<button type="button" class="nchip'+(k===cur?' on':'')+'" data-person="'+esc(lab[k])+'">'+esc(lab[k])+'</button>';
+    }).join('');
+  }
+  function closeDForm(){$('#dform').hidden=true;dEditId=null;}
+  function saveDForm(){
+    var amt=num($('#df-amount').value);
+    if(!amt){$('#df-amount').focus();return;}
+    var f={person:$('#df-person').value.trim()||'Sin nombre',amount:amt,note:$('#df-note').value.trim(),date:$('#df-date').value||today()};
+    if(dEditId){var it=findDebt(dEditId);if(it)Object.assign(it,f);}
+    else debts.items.push(Object.assign({id:genId('d'),dir:dDir,payments:[]},f));
+    closeDForm();saveDebts();
+  }
+  function deleteDebt(){
+    if(!dEditId)return;
+    var id=dEditId, snap=JSON.parse(JSON.stringify(debts));
+    debts.items=debts.items.filter(function(i){return i.id!==id;});
+    closeDForm();closeDebt();saveDebts();
+    toastUndo('Deuda eliminada',function(){debts=snap;saveDebts();});
   }
 
   /* ---------- panel de historial ---------- */
@@ -1077,6 +1305,16 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     var bk=e.target.closest('[data-bank]');
     if(bk){qBank=(qBank===bk.dataset.bank)?'':bk.dataset.bank;renderBanks();return;}
     if(e.target.closest('[data-bankadd]')){$('#q-badd').hidden=false;setTimeout(function(){$('#q-bname').focus();},50);return;}
+    var dd=e.target.closest('[data-ddir]');
+    if(dd){dDir=dd.dataset.ddir;renderDebts();return;}
+    var dop=e.target.closest('[data-dopen]');
+    if(dop){openDebt(dop.dataset.dopen);return;}
+    if(e.target.closest('[data-dclose]')){closeDebt();return;}
+    if(e.target.closest('[data-dfclose]')){closeDForm();return;}
+    var pp=e.target.closest('[data-person]');
+    if(pp){var pin=$('#df-person');pin.value=(pin.value.trim().toLowerCase()===pp.dataset.person.toLowerCase())?'':pp.dataset.person;renderPeople();return;}
+    var pd=e.target.closest('[data-pdel]');
+    if(pd){removePayment(pd.dataset.pdel);return;}
     var nt=e.target.closest('[data-note]');
     if(nt){var inp=$('#q-note');inp.value=(inp.value.trim().toLowerCase()===nt.dataset.note.toLowerCase())?'':nt.dataset.note;renderNotes();applyNoteCat();return;}
     if(e.target.closest('[data-sclose]')){closeSummary();return;}
@@ -1088,11 +1326,13 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'){
       if(!$('#qsheet').hidden)closeQuick();
+      else if(!$('#dform').hidden)closeDForm();
+      else if(!$('#dsheet').hidden)closeDebt();
       else if(!$('#ssheet').hidden)closeSummary();
       else if(sheet)closeSheet();
       else if(!$('#psheet').hidden)closePanel();
     }
-    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom]')){e.preventDefault();e.target.click();}
+    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom], .row[data-dopen]')){e.preventDefault();e.target.click();}
   });
   $('#month').onclick=openSummary;
   $('#q-note').addEventListener('input',function(){renderNotes();applyNoteCat();});
@@ -1106,6 +1346,17 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   ['pointerup','pointerleave','pointercancel'].forEach(function(ev){$('#q-cats').addEventListener(ev,function(){clearTimeout(lpTimer);});});
   try{$('#btab').open=localStorage.getItem('gastos:btab')==='1';}catch(e){}
   $('#btab').addEventListener('toggle',function(){try{localStorage.setItem('gastos:btab',$('#btab').open?'1':'0');}catch(e){}});
+  $('#d-add').onclick=function(){openDForm(null);};
+  $('#d-edit').onclick=function(){openDForm(dOpenId);};
+  $('#d-payb').onclick=addPayment;
+  $('#d-pay').addEventListener('input',function(e){e.target.value=dots(e.target.value);});
+  $('#d-pay').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addPayment();}});
+  $('#df-amount').addEventListener('input',function(e){e.target.value=dots(e.target.value);});
+  $('#df-person').addEventListener('input',renderPeople);
+  $('#df-save').onclick=saveDForm;
+  $('#df-del').onclick=deleteDebt;
+  try{$('#dtab').open=localStorage.getItem('gastos:dtab')==='1';}catch(e){}
+  $('#dtab').addEventListener('toggle',function(){try{localStorage.setItem('gastos:dtab',$('#dtab').open?'1':'0');}catch(e){}});
   $('#w-go').onclick=welcomeGo;
   $('#w-skip').onclick=endWelcome;
   $('#w-income').addEventListener('input',function(e){e.target.value=dots(e.target.value);});
