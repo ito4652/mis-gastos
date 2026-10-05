@@ -40,6 +40,8 @@
   --accent:#4CCB9A; --accent-ink:#06231A; --danger:#F08A5D; --warn:#E6B35A;
   --chip-bg:#1F2F2A; --chip-on:#1E4A3B; --chip-on-ink:#8FE3C0; --shadow:none;
 }
+details *{box-sizing:border-box}
+details::details-content{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.4;min-height:100vh}
@@ -260,6 +262,36 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .row.sub-row{padding-left:26px;min-height:46px}
 .row.sub-row .name{font-weight:500;font-size:15px}
 
+.pos{color:var(--accent)} .neg{color:var(--danger)}
+.iv-hero{margin:4px 0 10px}
+.iv-gain{font-size:14px;color:var(--muted);margin-top:2px}
+.iv-gain b{font-weight:600}
+.iv-rate{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 10px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:14px;color:var(--muted);text-align:left}
+.iv-rate b{color:var(--ink);font-weight:600}
+.iv-chart{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 10px;margin:0 0 12px;box-shadow:var(--shadow)}
+.iv-donut{display:flex;align-items:center;gap:14px}
+.iv-donut .dn{position:relative;flex:0 0 132px;width:132px;height:132px}
+.iv-donut svg{width:100%;height:100%}
+.dn-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;text-align:center}
+.dn-c b{font-family:"Bricolage Grotesque",Georgia,serif;font-size:17px;font-weight:700}
+.dn-c span{font-size:11px;color:var(--muted)}
+.lg2{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px}
+.lg2 div{display:flex;align-items:center;gap:8px;font-size:14px}
+.lg2 .l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg2 .p{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.lg2 .dot{flex:0 0 auto}
+.ch-t{font-size:10px;fill:var(--muted)}
+.iv-chart svg.line{width:100%;height:auto;display:block}
+.r2{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.row .tdot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+
+[hidden]{display:none!important}
+.iv-all{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 10px;padding:13px 14px;border-radius:14px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:600}
+.iv-all span{font-weight:500;font-size:13px;color:var(--muted)}
+.iv-all span.warn{color:var(--warn);font-weight:600}
+.iva-dap{display:flex;flex-direction:column;gap:2px;padding:10px 12px;margin-bottom:12px;background:var(--chip-bg);border-radius:12px;font-size:14px}
+.iva-dap span{color:var(--muted)}
+
 .backup{margin-top:20px;padding:14px 16px;border:1px solid var(--line);background:var(--card);border-radius:16px}
 .backup .bt{font-weight:600;margin-bottom:2px}
 .backup .note{margin:0 0 10px;font-size:13px;color:var(--muted)}
@@ -267,6 +299,8 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .b-btns button{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;font-weight:600;color:var(--accent)}
 .skip{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--muted);padding:10px;font-weight:500}
 .addbtn[hidden]{display:none}
+
+.autobtn{display:block;width:100%;margin:-2px 0 12px;padding:11px;border-radius:12px;border:1px dashed var(--line);background:transparent;color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -337,6 +371,21 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     <ul class="list" id="d-list"></ul>
     <button class="addbtn" id="d-add" type="button">+ Agregar deuda</button>
     <div id="d-done"></div>
+  </details>
+
+  <details class="btab" id="ivtab">
+    <summary><div class="dt"><span>Inversiones</span><small id="iv-sub"></small></div><i class="mchev"></i></summary>
+    <div class="iv-hero">
+      <div class="a-lbl">Valor total</div>
+      <div class="a-big plain" id="iv-total"></div>
+      <div class="iv-gain" id="iv-gain"></div>
+    </div>
+    <button class="iv-rate" id="iv-rate" type="button"></button>
+    <button class="iv-all" id="iv-all" type="button"></button>
+    <div class="dseg" id="iv-seg"></div>
+    <div class="iv-chart" id="iv-chart"></div>
+    <ul class="list" id="iv-list"></ul>
+    <button class="addbtn" id="iv-add" type="button">+ Agregar inversión</button>
   </details>
 
   <div class="backup">
@@ -411,6 +460,66 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       <button class="btn-del" id="df-del" type="button" hidden>Eliminar</button>
       <button class="btn-save" id="df-save" type="button">Guardar</button>
     </div>
+  </div>
+</div>
+
+<div class="sheet" id="ivdetail" hidden>
+  <div class="scrim" data-ivdclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="ivd-title">
+    <div class="p-top"><h3 id="ivd-title"></h3><button class="xbtn" data-ivdclose aria-label="Cerrar">✕</button></div>
+    <div id="ivd-hero"></div>
+    <div class="d-pay" id="ivd-payrow"><input id="ivd-val" inputmode="decimal" autocomplete="off" placeholder="Nuevo valor actual"><button id="ivd-upd" type="button">Actualizar</button></div>
+    <div class="a-list-h">Historial de valores</div>
+    <ul class="list" id="ivd-hist" style="margin-top:8px"></ul>
+    <button class="addbtn" id="ivd-edit" type="button">Editar inversión</button>
+  </div>
+</div>
+
+<div class="sheet" id="ivform" hidden>
+  <div class="scrim" data-ivfclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="ivf-title">
+    <h3 id="ivf-title" style="margin-bottom:14px"></h3>
+    <label class="fld"><span>Nombre</span><input id="ivf-name" autocomplete="off" placeholder="Ej: Fondo mutuo, Apple, ETF S&P 500"></label>
+    <div class="b-lbl">Tipo</div>
+    <div class="banks" id="ivf-types"></div>
+    <div class="b-lbl" id="ivf-dapl">¿Es un depósito a plazo? (se calcula solo)</div>
+    <div class="dseg" id="ivf-dap" style="margin:0 0 12px"></div>
+    <div class="b-lbl" id="ivf-curl">Moneda</div>
+    <div class="dseg" id="ivf-cur" style="margin:0 0 12px"></div>
+    <label class="fld"><span id="ivf-invl">Monto invertido</span><input id="ivf-inv" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+    <label class="fld" id="ivf-qtyw"><span>Cantidad de acciones o cuotas (opcional)</span><input id="ivf-qty" inputmode="decimal" autocomplete="off" placeholder="Ej: 12,5"></label>
+    <label class="fld" id="ivf-valw"><span id="ivf-vall">Valor actual</span><input id="ivf-val" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+    <div id="ivf-dapf" hidden>
+      <label class="fld"><span>Tasa mensual (%)</span><input id="ivf-drate" inputmode="decimal" autocomplete="off" placeholder="Ej: 0,45"></label>
+      <label class="fld"><span>Fecha de vencimiento</span><input id="ivf-dend" type="date"></label>
+    </div>
+    <label class="fld" id="ivf-brw"><span>Dólar al comprar (opcional)</span><input id="ivf-buy" inputmode="decimal" autocomplete="off" placeholder="Ej: 925,5"></label>
+    <label class="fld"><span>Fecha de inicio</span><input id="ivf-date" type="date"></label>
+    <div class="actions">
+      <button class="btn-del" id="ivf-del" type="button" hidden>Eliminar</button>
+      <button class="btn-save" id="ivf-save" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="ivall" hidden>
+  <div class="scrim" data-ivaclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="iva-title">
+    <div class="p-top"><h3 id="iva-title">Actualizar todo</h3><button class="xbtn" data-ivaclose aria-label="Cerrar">✕</button></div>
+    <p class="sub" style="margin:0 0 14px;font-size:14px">Cambia solo lo que haya variado. Lo que dejes igual no se toca.</p>
+    <div id="iva-body"></div>
+    <div class="actions"><button class="btn-save" id="iva-save" type="button">Guardar todo</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="ratesheet" hidden>
+  <div class="scrim" data-rclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="r-title">
+    <h3 id="r-title" style="margin-bottom:6px">Dólar de hoy</h3>
+    <p class="sub" style="margin:0 0 14px;font-size:14px">Escribe cuántos pesos vale un dólar. Lo puedes ver en tu banco o en tu casa de cambio. Cada vez que lo actualizas, se guarda para el gráfico.</p>
+    <label class="fld"><span>Pesos por dólar</span><input id="r-in" inputmode="decimal" autocomplete="off" placeholder="Ej: 928,5"></label>
+    <button type="button" class="autobtn" data-fetchrate>Traer el dólar automáticamente</button>
+    <div class="actions"><button class="btn-save" id="r-save" type="button">Guardar</button></div>
   </div>
 </div>
 
@@ -706,6 +815,7 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     }).join(''):'<li class="row empty">Aún no hay categorías</li>';
     renderBankTab();
     renderDebts();
+    renderInv();
     if(!$('#psheet').hidden)renderPanel();
   }
 
@@ -902,6 +1012,406 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     debts.items=debts.items.filter(function(i){return i.id!==id;});
     closeDForm();closeDebt();saveDebts();
     toastUndo('Deuda eliminada',function(){debts=snap;saveDebts();});
+  }
+
+  /* ---------- inversiones ---------- */
+  var IV_TYPES=['Fondos y DAP','Acciones y ETF','Dólares','Otro'], IV_COLORS=['#2F9E7A','#E0A33E','#5AA5E0','#9B7FD1'];
+  var iv={items:[],rate:0,rateDate:'',rates:[],snaps:[]}, ivView='mix', ivOpenId=null, ivEditId=null, ivfType=IV_TYPES[0], ivfCur='CLP', ivfCurTouched=false, ivfDap=false, ivTimer=null, ivInflight=0, ivLast=0;
+  function normIv(d){
+    d=JSON.parse(JSON.stringify(d||{}));
+    return {items:(Array.isArray(d.items)?d.items:[]).map(function(i){
+        i.invested=Number(i.invested)||0;i.value=Number(i.value)||0;i.buyRate=Number(i.buyRate)||0;i.qty=Number(i.qty)||0;i.price=Number(i.price)||0;
+        i.cur=i.cur==='USD'?'USD':'CLP';i.updates=Array.isArray(i.updates)?i.updates:[];
+        i.dap=(i.dap&&typeof i.dap==='object')?{rate:Number(i.dap.rate)||0,end:i.dap.end||''}:null;
+        return i;}),
+      rate:Number(d.rate)||0,rateDate:d.rateDate||'',rates:Array.isArray(d.rates)?d.rates:[],snaps:Array.isArray(d.snaps)?d.snaps:[]};
+  }
+  try{var ivl=localStorage.getItem('gastos:invest');if(ivl)iv=normIv(JSON.parse(ivl));}catch(e){}
+  function ivLocal(){try{localStorage.setItem('gastos:invest',JSON.stringify(iv));}catch(e){}}
+  function flushIv(){
+    ivTimer=null;
+    if(!db||!uid)return;
+    var payload=JSON.parse(JSON.stringify(iv));
+    ivInflight++;
+    chain=chain.then(function(){return db.collection('data/users/'+uid).doc('invest').set(payload);})
+      .then(function(){ivInflight--;ivLast=Date.now();})
+      .catch(function(){ivInflight--;ivLast=Date.now();});
+  }
+  function saveIv(){
+    ivLocal();renderInv();
+    if(!db||!uid)return;
+    clearTimeout(ivTimer);ivTimer=setTimeout(flushIv,350);
+  }
+  function subscribeIv(){
+    if(!db||!uid)return;
+    try{
+      db.collection('data/users/'+uid).doc('invest').onSnapshot(function(snap){
+        if(ivTimer||ivInflight>0||Date.now()-ivLast<1500)return;
+        if(snap.exists){iv=normIv(snap.data());ivLocal();renderInv();}
+        else if(iv.items.length){flushIv();}
+      },function(){});
+    }catch(e){}
+  }
+  function parseNum(t){
+    t=String(t||'').trim();
+    if(!t)return 0;
+    if(t.indexOf(',')>=0)return parseFloat(t.replace(/\./g,'').replace(',','.'))||0;
+    if(/^\d{1,3}(\.\d{3})+$/.test(t))return parseFloat(t.replace(/\./g,''))||0;
+    return parseFloat(t)||0;
+  }
+  function decStr(n,dp){dp=dp===undefined?2:dp;var k=Math.pow(10,dp);return String(Math.round((Number(n)||0)*k)/k).replace('.',',');}
+  function fmtQty(n){return decStr(n,4);}
+  function usd(n){
+    var v=Math.round((Number(n)||0)*100)/100, neg=v<0;v=Math.abs(v);
+    var p=v.toFixed(2).split('.'), i=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+    return (neg?'-':'')+'US$'+i+(p[1]==='00'?'':','+p[1]);
+  }
+  function numToIn(n,cur){
+    if(!n)return '';
+    if(cur==='USD'||Math.round(n)!==n)return decStr(n,4);
+    return dots(n);
+  }
+  function pctStr(p){return (p>=0?'+':'−')+Math.abs(p).toFixed(1).replace('.',',')+'%';}
+  function signMoney(n){return (n>=0?'+':'−')+money(Math.abs(n));}
+  function compactMoney(n){var a=Math.abs(n);if(a>=1e6)return '$'+(Math.round(n/1e4)/100).toString().replace('.',',')+' M';return money(n);}
+  function findIv(id){return iv.items.filter(function(i){return i.id===id;})[0]||null;}
+  function ivTypeIdx(t){var k=IV_TYPES.indexOf(t);return k<0?IV_TYPES.length-1:k;}
+  function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);}
+  function dapValueAt(i,date){
+    var d=i.dap, end=(d.end&&d.end<date)?d.end:date;
+    var days=Math.max(0,daysBetween(i.date||date,end));
+    return i.invested*(1+(d.rate/100)*days/30);
+  }
+  function effValue(i){return i.dap?dapValueAt(i,today()):(i.qty>0?i.qty*i.price:i.value);}
+  function ivCalc(i){
+    var r=iv.rate||0, u=i.cur==='USD', v=effValue(i);
+    var val=u?v*r:v, cost=u?i.invested*(i.buyRate>0?i.buyRate:r):i.invested;
+    return {val:val,cost:cost,gain:val-cost,pct:cost>0?(val-cost)/cost*100:0,missing:u&&!r};
+  }
+  function ivTotals(){
+    var v=0,c=0,miss=false;
+    iv.items.forEach(function(i){var k=ivCalc(i);if(k.missing){miss=true;return;}v+=k.val;c+=k.cost;});
+    return {value:v,cost:c,gain:v-c,pct:c>0?(v-c)/c*100:0,missing:miss};
+  }
+  function ivSnap(){
+    var T=ivTotals();
+    if(T.missing||!iv.items.length)return;
+    var d=today(), last=iv.snaps[iv.snaps.length-1];
+    if(last&&last.d===d)last.v=Math.round(T.value);else iv.snaps.push({d:d,v:Math.round(T.value)});
+    if(iv.snaps.length>200)iv.snaps.shift();
+  }
+  function ivSnapIfNeeded(){
+    if(!iv.items.length)return;
+    var last=iv.snaps[iv.snaps.length-1];
+    if(last&&last.d===today())return;
+    if(ivTotals().missing)return;
+    ivSnap();saveIv();
+  }
+  function ivSetRate(r){
+    iv.rate=r;iv.rateDate=today();
+    var last=iv.rates[iv.rates.length-1];
+    if(last&&last.d===iv.rateDate)last.v=r;else iv.rates.push({d:iv.rateDate,v:r});
+    if(iv.rates.length>200)iv.rates.shift();
+    ivSnap();
+  }
+  function ivPushUpdate(it){
+    var d=today(), val=effValue(it), last=it.updates.filter(function(u){return u.date===d;})[0];
+    if(last){last.value=val;if(it.qty>0)last.price=it.price;}else{var o={date:d,value:val};if(it.qty>0)o.price=it.price;it.updates.push(o);}
+  }
+  function ivLastUpdate(){
+    var best='';
+    iv.items.forEach(function(i){if(i.dap)return;i.updates.forEach(function(u){if(u.date>best)best=u.date;});});
+    if(iv.rate&&iv.rateDate>best&&iv.items.some(function(i){return i.cur==='USD';}))best=iv.rateDate;
+    return best;
+  }
+  function agoStr(d){var n=daysBetween(d,today());return n<=0?'hoy':(n===1?'ayer':'hace '+n+' días');}
+
+  function donutSvg(parts,total){
+    var R=52,C=2*Math.PI*R,acc=0;
+    var h='<svg viewBox="0 0 140 140" aria-hidden="true"><circle cx="70" cy="70" r="'+R+'" fill="none" stroke="var(--chip-bg)" stroke-width="20"/>';
+    parts.forEach(function(p){
+      var len=total>0?p.v/total*C:0;if(len<=0)return;
+      var gap=parts.length>1?2.5:0;
+      h+='<circle cx="70" cy="70" r="'+R+'" fill="none" stroke="'+p.c+'" stroke-width="20" stroke-dasharray="'+Math.max(0,len-gap).toFixed(2)+' '+(C-Math.max(0,len-gap)).toFixed(2)+'" stroke-dashoffset="'+(-acc).toFixed(2)+'" transform="rotate(-90 70 70)"/>';
+      acc+=len;
+    });
+    return h+'</svg>';
+  }
+  function lineSvg(pts,color,fmt,hideY,empty){
+    if(pts.length<2)return '<p class="sub" style="padding:18px 6px;text-align:center">'+esc(empty)+'</p>';
+    var W=320,H=140,pl=10,pr=10,pt=22,pb=24;
+    var xs=pts.map(function(p){return new Date(p.d+'T00:00:00').getTime();}), x0=xs[0], span=Math.max(1,xs[xs.length-1]-x0);
+    var vs=pts.map(function(p){return p.v;}), mn=Math.min.apply(null,vs), mx=Math.max.apply(null,vs);
+    var rawMn=mn, rawMx=mx;
+    if(mx===mn){mx+=1;mn-=1;}
+    var pv=(mx-mn)*0.1;mn-=pv;mx+=pv;
+    function X(i){return pl+(xs[i]-x0)/span*(W-pl-pr);}
+    function Y(v){return pt+(1-(v-mn)/(mx-mn))*(H-pt-pb);}
+    var d=pts.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+    var area=d+' L'+X(pts.length-1).toFixed(1)+' '+(H-pb)+' L'+X(0).toFixed(1)+' '+(H-pb)+' Z';
+    var li=pts.length-1;
+    var h='<svg class="line" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Gráfico de evolución">'
+      +'<path d="'+area+'" fill="'+color+'" opacity=".13"/><path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'
+      +'<circle cx="'+X(li).toFixed(1)+'" cy="'+Y(pts[li].v).toFixed(1)+'" r="4" fill="'+color+'"/>'
+      +'<text class="ch-t" x="'+pl+'" y="'+(H-6)+'">'+esc(fmtDate(pts[0].d))+'</text>'
+      +'<text class="ch-t" x="'+(W-pr)+'" y="'+(H-6)+'" text-anchor="end">'+esc(fmtDate(pts[li].d))+'</text>';
+    if(!hideY){
+      h+='<text class="ch-t" x="'+pl+'" y="12">máx '+esc(fmt(rawMx))+'</text>'
+        +'<text class="ch-t" x="'+(W-pr)+'" y="12" text-anchor="end">mín '+esc(fmt(rawMn))+'</text>';
+    }
+    return h+'</svg>';
+  }
+
+  function renderInv(){
+    var T=ivTotals(), hide=priv, has=iv.items.length>0;
+    $('#iv-sub').textContent=has?((hide?'$ ••••••':money(T.value))+(T.cost>0?' · '+pctStr(T.pct):'')):'';
+    $('#iv-total').textContent=hide?'$ ••••••':money(T.value);
+    var g='';
+    if(!has)g='Agrega tu primera inversión';
+    else{
+      g='<b class="'+(T.gain>=0?'pos':'neg')+'">'+(hide?'':signMoney(T.gain)+' · ')+pctStr(T.pct)+'</b> sobre lo invertido';
+      if(T.missing)g+='<br><span class="neg">Falta el dólar de hoy para sumar tus inversiones en dólares</span>';
+    }
+    $('#iv-gain').innerHTML=g;
+    $('#iv-rate').innerHTML=iv.rate?'<span>Dólar <b>$'+decStr(iv.rate)+'</b> · '+esc(fmtDate(iv.rateDate))+'</span><span style="color:var(--accent);font-weight:600">Actualizar ›</span>':'<span>Agrega el dólar de hoy</span><span style="color:var(--accent);font-weight:600">Agregar ›</span>';
+    var lu=ivLastUpdate(), stale=lu&&daysBetween(lu,today())>7;
+    $('#iv-all').hidden=!has;
+    $('#iv-all').innerHTML='<b>Actualizar todo</b><span class="'+(stale?'warn':'')+'">'+(lu?esc(agoStr(lu)):'')+'</span>';
+    $('#iv-seg').innerHTML=[['mix','Reparto'],['evo','Evolución'],['usd','Dólar']].map(function(v){return '<button type="button" data-ivseg="'+v[0]+'" class="'+(ivView===v[0]?'on':'')+'"><span>'+v[1]+'</span></button>';}).join('');
+    var ch='';
+    if(ivView==='mix'){
+      var sums=IV_TYPES.map(function(){return 0;}), tot=0;
+      iv.items.forEach(function(i){var k=ivCalc(i);if(k.missing)return;sums[ivTypeIdx(i.type)]+=k.val;tot+=k.val;});
+      if(tot<=0)ch='<p class="sub" style="padding:18px 6px;text-align:center">Aún no hay inversiones para mostrar</p>';
+      else{
+        var parts=IV_TYPES.map(function(t,k){return {l:t,v:sums[k],c:IV_COLORS[k]};}).filter(function(p){return p.v>0;});
+        ch='<div class="iv-donut"><div class="dn">'+donutSvg(parts,tot)+'<div class="dn-c"><b>'+(hide?'$ ••••':compactMoney(tot))+'</b><span>total</span></div></div><div class="lg2">'
+          +parts.map(function(p){return '<div><i class="dot" style="background:'+p.c+'"></i><span class="l">'+esc(p.l)+'</span><span class="p">'+Math.round(p.v/tot*100)+'%</span></div>';}).join('')+'</div></div>';
+      }
+    }else if(ivView==='evo'){
+      ch=lineSvg(iv.snaps.map(function(p){return {d:p.d,v:p.v};}),'#2F9E7A',function(v){return compactMoney(v);},hide,'Actualiza tus valores en distintos días para ver la evolución');
+    }else{
+      ch=lineSvg(iv.rates.map(function(p){return {d:p.d,v:p.v};}),'#E0A33E',function(v){return '$'+decStr(v);},false,'Actualiza el dólar en distintos días para ver su evolución');
+    }
+    $('#iv-chart').innerHTML=ch;
+    var items=iv.items.slice().sort(function(a,b){return ivCalc(b).val-ivCalc(a).val;});
+    $('#iv-list').innerHTML=items.length?items.map(function(i){
+      var k=ivCalc(i);
+      var sub=i.dap?('Depósito a plazo'+(i.dap.end?' · vence '+fmtDate(i.dap.end):'')):(i.type+(i.cur==='USD'?' · '+(hide?'US$ ••••':usd(effValue(i))):''));
+      return '<li class="row" tabindex="0" role="button" data-ivopen="'+esc(i.id)+'"><i class="tdot" style="background:'+IV_COLORS[ivTypeIdx(i.type)]+'"></i><div class="main"><span class="name">'+esc(i.name)+'</span><span class="sub">'+esc(sub)+'</span></div>'
+        +'<div class="r2"><span class="amt">'+(k.missing?'<span class="neg">Falta dólar</span>':(hide?'$ ••••':money(k.val)))+'</span>'+(k.missing||k.cost<=0?'':'<span class="sub '+(k.gain>=0?'pos':'neg')+'">'+pctStr(k.pct)+'</span>')+'</div><span class="chev">›</span></li>';
+    }).join(''):'<li class="row empty">Aún no tienes inversiones registradas</li>';
+    if(!$('#ivdetail').hidden)renderIvDetail();
+  }
+  function openIvDetail(id){ivOpenId=id;renderIvDetail();if(ivOpenId)$('#ivdetail').hidden=false;}
+  function closeIvDetail(){$('#ivdetail').hidden=true;ivOpenId=null;}
+  function renderIvDetail(){
+    var it=findIv(ivOpenId);
+    if(!it){closeIvDetail();return;}
+    var k=ivCalc(it), hide=priv, u=it.cur==='USD', isDap=!!it.dap;
+    $('#ivd-title').textContent=it.name;
+    var h='<div class="a-lbl">'+esc(it.type)+(isDap?' · estimado hoy':(u?' · en dólares':''))+'</div>'
+      +'<div class="a-big plain">'+(k.missing?'Falta el dólar':(hide?'$ ••••••':money(k.val)))+'</div>';
+    if(isDap){
+      h+='<div class="a-sub">Capital '+(hide?'$ ••••':money(it.invested))+' · '+decStr(it.dap.rate)+'% mensual</div>';
+    }else{
+      h+='<div class="a-sub">'+(u?'Valor actual '+(hide?'US$ ••••':usd(effValue(it)))+' · invertido '+(hide?'US$ ••••':usd(it.invested)):'Invertido '+(hide?'$ ••••':money(it.invested)))+'</div>';
+      if(it.qty>0)h+='<div class="a-sub" style="margin-top:2px">'+fmtQty(it.qty)+' unidades × '+(hide?'••••':(u?usd(it.price):'$'+decStr(it.price,4)))+'</div>';
+    }
+    if(!k.missing&&k.cost>0)h+='<div class="iv-gain"><b class="'+(k.gain>=0?'pos':'neg')+'">'+(hide?'':signMoney(k.gain)+' · ')+pctStr(k.pct)+'</b></div>';
+    if(isDap){
+      var left=it.dap.end?daysBetween(today(),it.dap.end):null;
+      h+='<div class="a-tip">'+(it.dap.end?(left>=0?'Vence el '+esc(fmtDate(it.dap.end))+(left===0?' (hoy)':' (en '+left+' '+(left===1?'día':'días')+')'):'Venció el '+esc(fmtDate(it.dap.end))):'Sin fecha de vencimiento')+'. Se calcula sola, con interés simple, sin impuestos ni reajustes.</div>';
+    }
+    if(u&&it.buyRate>0&&iv.rate&&!hide){
+      var fx=effValue(it)*(iv.rate-it.buyRate);
+      h+='<div class="a-tip">Dólar al comprar $'+decStr(it.buyRate)+' → hoy $'+decStr(iv.rate)+'. Efecto del dólar: '+signMoney(fx)+'</div>';
+    }
+    $('#ivd-hero').innerHTML=h;
+    $('#ivd-payrow').hidden=isDap;
+    $('#ivd-val').placeholder=(it.qty>0?'Nuevo precio por unidad':'Nuevo valor actual')+(u?' (US$)':'');
+    var rows='';
+    if(isDap){
+      var start=it.date||today();
+      rows+='<li class="ent static"><span class="n"><span class="t">Inicio · '+esc(fmtDate(start))+'</span><span class="m">Capital</span></span><span>'+(hide?'••••':money(it.invested))+'</span></li>';
+      rows+='<li class="ent static"><span class="n"><span class="t">Hoy</span><span class="m">Estimado</span></span><span>'+(hide?'••••':money(effValue(it)))+'</span></li>';
+      if(it.dap.end)rows+='<li class="ent static"><span class="n"><span class="t">Vencimiento · '+esc(fmtDate(it.dap.end))+'</span><span class="m">Valor final estimado</span></span><span>'+(hide?'••••':money(dapValueAt(it,it.dap.end)))+'</span></li>';
+    }else{
+      var ups=it.updates.slice().sort(function(a,b){return a.date<b.date?-1:1;});
+      for(var n=ups.length-1;n>=0;n--){
+        var prev=n>0?ups[n-1].value:null, cur=ups[n].value, dl=prev===null?'':(cur-prev);
+        rows+='<li class="ent static"><span class="n"><span class="t">'+esc(fmtDate(ups[n].date))+(n===0?' · inicio':'')+'</span>'+(dl===''?'':'<span class="m '+(dl>=0?'pos':'neg')+'">'+(hide?'':(dl>=0?'+':'−')+(u?usd(Math.abs(dl)):money(Math.abs(dl))))+'</span>')+'</span><span>'+(hide?'••••':(u?usd(cur):money(cur)))+'</span></li>';
+      }
+    }
+    $('#ivd-hist').innerHTML=rows||'<li class="row empty">Sin movimientos</li>';
+  }
+  function ivUpdateValue(){
+    var it=findIv(ivOpenId);if(!it||it.dap)return;
+    var txt=$('#ivd-val').value.trim();
+    if(!txt){$('#ivd-val').focus();return;}
+    var val=parseNum(txt);
+    if(it.qty>0){it.price=val;it.value=it.qty*val;}else it.value=val;
+    ivPushUpdate(it);
+    $('#ivd-val').value='';
+    ivSnap();saveIv();toast('Valor actualizado');
+  }
+
+  /* --- dólar automático (mindicador.cl, dólar observado) --- */
+  var dolarBusy=false;
+  async function fetchDolar(manual){
+    if(dolarBusy)return;
+    dolarBusy=true;
+    try{
+      var ctl=new AbortController(), to=setTimeout(function(){ctl.abort();},9000);
+      var r=await fetch('https://mindicador.cl/api/dolar',{signal:ctl.signal});
+      clearTimeout(to);
+      if(!r.ok)throw new Error('http');
+      var j=await r.json();
+      var serie=(Array.isArray(j.serie)?j.serie:[]).map(function(x){return {d:String(x.fecha).slice(0,10),v:Number(x.valor)};}).filter(function(x){return x.v>0&&/^\d{4}-\d{2}-\d{2}$/.test(x.d);});
+      if(!serie.length)throw new Error('vacio');
+      serie.sort(function(a,b){return a.d<b.d?-1:1;});
+      var map={};
+      iv.rates.forEach(function(p){map[p.d]=p.v;});
+      serie.forEach(function(p){map[p.d]=p.v;});
+      iv.rates=Object.keys(map).sort().map(function(d){return {d:d,v:map[d]};}).slice(-200);
+      var last=serie[serie.length-1];
+      iv.rate=last.v;iv.rateDate=last.d;
+      ivSnap();saveIv();
+      try{localStorage.setItem('gastos:fetchAt',String(Date.now()));}catch(e){}
+      var ri=$('#iva-rate');if(ri&&!$('#ivall').hidden)ri.value=decStr(last.v);
+      var rr=$('#r-in');if(rr&&!$('#ratesheet').hidden)rr.value=decStr(last.v);
+      if(manual)toast('Dólar: $'+decStr(last.v)+' ('+fmtDate(last.d)+')');
+    }catch(e){
+      if(manual)toast('No pude traer el dólar. Escríbelo a mano.');
+    }
+    dolarBusy=false;
+  }
+  function autoDolar(){
+    if(!iv.items.some(function(i){return i.cur==='USD';})&&!iv.rate)return;
+    var last=0;try{last=+localStorage.getItem('gastos:fetchAt')||0;}catch(e){}
+    if(Date.now()-last<6*3600*1000)return;
+    fetchDolar(false);
+  }
+
+  /* --- actualizar todo --- */
+  function openIvAll(){
+    var h='';
+    var hasUsd=iv.items.some(function(i){return i.cur==='USD';});
+    if(hasUsd||iv.rate)h+='<label class="fld"><span>Dólar de hoy (pesos por US$)</span><input id="iva-rate" inputmode="decimal" autocomplete="off" value="'+esc(iv.rate?decStr(iv.rate):'')+'"></label><button type="button" class="autobtn" data-fetchrate>Traer el dólar automáticamente</button>';
+    iv.items.slice().sort(function(a,b){return ivTypeIdx(a.type)-ivTypeIdx(b.type);}).forEach(function(i){
+      if(i.dap){h+='<div class="iva-dap"><b>'+esc(i.name)+'</b><span>Se calcula sola · '+(priv?'$ ••••':money(effValue(i)))+'</span></div>';return;}
+      var cur=i.qty>0?i.price:i.value, lbl=(i.qty>0?'Precio por unidad':'Valor actual')+(i.cur==='USD'?' (US$)':' ($)');
+      h+='<label class="fld"><span>'+esc(i.name)+' · '+lbl+'</span><input data-ivaid="'+esc(i.id)+'" inputmode="decimal" autocomplete="off" value="'+esc(numToIn(cur,i.cur))+'"></label>';
+    });
+    $('#iva-body').innerHTML=h||'<p class="sub">Aún no tienes inversiones.</p>';
+    $('#ivall').hidden=false;
+  }
+  function closeIvAll(){$('#ivall').hidden=true;}
+  function ivAllSave(){
+    var changed=0, re=$('#iva-rate');
+    if(re){var r=parseNum(re.value);if(r>0&&r!==iv.rate){ivSetRate(r);changed++;}}
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ivaid]'),function(el){
+      var it=findIv(el.dataset.ivaid);if(!it||it.dap)return;
+      var txt=el.value.trim();if(!txt)return;
+      var v=parseNum(txt), cur=it.qty>0?it.price:it.value;
+      if(Math.abs(v-cur)<1e-9)return;
+      if(it.qty>0){it.price=v;it.value=it.qty*v;}else it.value=v;
+      ivPushUpdate(it);changed++;
+    });
+    ivSnap();closeIvAll();saveIv();
+    toast(changed?'Actualizado ('+changed+')':'Sin cambios');
+  }
+
+  /* --- formulario --- */
+  function openIvForm(id){
+    ivEditId=id||null;
+    var it=id?findIv(id):null;
+    ivfType=it?it.type:IV_TYPES[0];ivfCur=it?it.cur:'CLP';ivfCurTouched=!!it;ivfDap=!!(it&&it.dap);
+    $('#ivf-title').textContent=it?'Editar inversión':'Nueva inversión';
+    $('#ivf-name').value=it?it.name:'';
+    $('#ivf-inv').value=it?numToIn(it.invested,it.cur):'';
+    $('#ivf-qty').value=it&&it.qty>0?decStr(it.qty,4):'';
+    $('#ivf-val').value=it?(it.qty>0?numToIn(it.price,it.cur):numToIn(it.value,it.cur)):'';
+    $('#ivf-buy').value=it&&it.buyRate?decStr(it.buyRate):'';
+    $('#ivf-drate').value=it&&it.dap?decStr(it.dap.rate):'';
+    $('#ivf-dend').value=it&&it.dap?(it.dap.end||''):'';
+    $('#ivf-date').value=it?(it.date||today()):today();
+    $('#ivf-del').hidden=!it;
+    renderIvForm();
+    $('#ivform').hidden=false;
+    if(!it)setTimeout(function(){$('#ivf-name').focus();},80);
+  }
+  function closeIvForm(){$('#ivform').hidden=true;ivEditId=null;}
+  function updateValLabel(){
+    var sym=ivfCur==='USD'?'US$':'$', q=parseNum($('#ivf-qty').value)>0;
+    $('#ivf-vall').textContent=(q?'Precio actual por unidad (':'Valor actual (')+sym+')';
+  }
+  function renderIvForm(){
+    var isFund=ivfType==='Fondos y DAP', dap=isFund&&ivfDap;
+    if(!isFund)ivfDap=false;
+    if(dap)ivfCur='CLP';
+    $('#ivf-types').innerHTML=IV_TYPES.map(function(t,k){return '<button type="button" class="bank'+(t===ivfType?' on':'')+'" data-ivtype="'+k+'" aria-pressed="'+(t===ivfType)+'">'+esc(t)+'</button>';}).join('');
+    $('#ivf-dapl').hidden=!isFund;$('#ivf-dap').hidden=!isFund;
+    $('#ivf-dap').innerHTML=[['no','No'],['yes','Sí, a plazo fijo']].map(function(c){return '<button type="button" data-idap="'+c[0]+'" class="'+((c[0]==='yes')===dap?'on':'')+'"><span>'+c[1]+'</span></button>';}).join('');
+    $('#ivf-curl').hidden=dap;$('#ivf-cur').hidden=dap;
+    $('#ivf-cur').innerHTML=[['CLP','Pesos ($)'],['USD','Dólares (US$)']].map(function(c){return '<button type="button" data-icur="'+c[0]+'" class="'+(ivfCur===c[0]?'on':'')+'"><span>'+c[1]+'</span></button>';}).join('');
+    var sym=ivfCur==='USD'?'US$':'$';
+    $('#ivf-invl').textContent=dap?'Capital invertido ($)':'Monto invertido ('+sym+')';
+    $('#ivf-qtyw').hidden=dap;$('#ivf-valw').hidden=dap;$('#ivf-dapf').hidden=!dap;
+    $('#ivf-brw').hidden=dap||ivfCur!=='USD';
+    updateValLabel();
+  }
+  function saveIvForm(){
+    var dap=ivfDap&&ivfType==='Fondos y DAP';
+    var invested=parseNum($('#ivf-inv').value), f;
+    var date=$('#ivf-date').value||today(), name=$('#ivf-name').value.trim()||'Sin nombre';
+    if(dap){
+      if(!(invested>0)){$('#ivf-inv').focus();return;}
+      f={name:name,type:ivfType,cur:'CLP',invested:invested,value:invested,qty:0,price:0,buyRate:0,date:date,dap:{rate:parseNum($('#ivf-drate').value),end:$('#ivf-dend').value||''}};
+    }else{
+      var qty=parseNum($('#ivf-qty').value), vin=parseNum($('#ivf-val').value), price=0, value;
+      if(qty>0){
+        if(!(vin>0)){$('#ivf-val').focus();return;}
+        price=vin;value=qty*price;
+      }else value=vin;
+      if(!(invested>0)&&!(value>0)){$('#ivf-inv').focus();return;}
+      if(!(invested>0))invested=value;
+      if(!(value>0))value=invested;
+      f={name:name,type:ivfType,cur:ivfCur,invested:invested,value:value,qty:qty>0?qty:0,price:price,buyRate:ivfCur==='USD'?parseNum($('#ivf-buy').value):0,date:date,dap:null};
+    }
+    if(ivEditId){
+      var it=findIv(ivEditId);
+      if(it){
+        var before=effValue(it);
+        Object.assign(it,f);
+        if(!it.dap&&effValue(it)!==before)ivPushUpdate(it);
+      }
+    }else{
+      f.id=genId('v');
+      f.updates=[{date:date,value:dap?invested:(f.qty>0?f.qty*f.price:f.value)}];
+      iv.items.push(f);
+    }
+    var needRate=f.cur==='USD'&&!iv.rate;
+    closeIvForm();ivSnap();saveIv();
+    if(needRate){openRate();toast('Ingresa el dólar de hoy');}
+  }
+  function deleteIv(){
+    if(!ivEditId)return;
+    var id=ivEditId, snap=JSON.parse(JSON.stringify(iv));
+    iv.items=iv.items.filter(function(i){return i.id!==id;});
+    closeIvForm();closeIvDetail();saveIv();
+    toastUndo('Inversión eliminada',function(){iv=snap;saveIv();});
+  }
+  function openRate(){
+    $('#r-in').value=iv.rate?decStr(iv.rate):'';
+    $('#ratesheet').hidden=false;
+    setTimeout(function(){$('#r-in').focus();},80);
+  }
+  function closeRate(){$('#ratesheet').hidden=true;}
+  function saveRate(){
+    var r=parseNum($('#r-in').value);
+    if(!(r>0)){$('#r-in').focus();return;}
+    ivSetRate(r);closeRate();saveIv();toast('Dólar actualizado');
   }
 
   /* ---------- panel de historial ---------- */
@@ -1305,6 +1815,21 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     var bk=e.target.closest('[data-bank]');
     if(bk){qBank=(qBank===bk.dataset.bank)?'':bk.dataset.bank;renderBanks();return;}
     if(e.target.closest('[data-bankadd]')){$('#q-badd').hidden=false;setTimeout(function(){$('#q-bname').focus();},50);return;}
+    var ivs=e.target.closest('[data-ivseg]');
+    if(ivs){ivView=ivs.dataset.ivseg;renderInv();return;}
+    var ivo=e.target.closest('[data-ivopen]');
+    if(ivo){openIvDetail(ivo.dataset.ivopen);return;}
+    if(e.target.closest('[data-ivdclose]')){closeIvDetail();return;}
+    if(e.target.closest('[data-ivfclose]')){closeIvForm();return;}
+    if(e.target.closest('[data-rclose]')){closeRate();return;}
+    var ivt=e.target.closest('[data-ivtype]');
+    if(ivt){ivfType=IV_TYPES[+ivt.dataset.ivtype];if(ivfType!=='Fondos y DAP')ivfDap=false;if(ivfType==='Dólares'&&!ivfCurTouched)ivfCur='USD';renderIvForm();return;}
+    if(e.target.closest('[data-ivaclose]')){closeIvAll();return;}
+    if(e.target.closest('[data-fetchrate]')){fetchDolar(true);return;}
+    var idp=e.target.closest('[data-idap]');
+    if(idp){ivfDap=idp.dataset.idap==='yes';renderIvForm();return;}
+    var ivc=e.target.closest('[data-icur]');
+    if(ivc){ivfCur=ivc.dataset.icur;ivfCurTouched=true;renderIvForm();return;}
     var dd=e.target.closest('[data-ddir]');
     if(dd){dDir=dd.dataset.ddir;renderDebts();return;}
     var dop=e.target.closest('[data-dopen]');
@@ -1326,13 +1851,17 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'){
       if(!$('#qsheet').hidden)closeQuick();
+      else if(!$('#ratesheet').hidden)closeRate();
+      else if(!$('#ivall').hidden)closeIvAll();
+      else if(!$('#ivform').hidden)closeIvForm();
+      else if(!$('#ivdetail').hidden)closeIvDetail();
       else if(!$('#dform').hidden)closeDForm();
       else if(!$('#dsheet').hidden)closeDebt();
       else if(!$('#ssheet').hidden)closeSummary();
       else if(sheet)closeSheet();
       else if(!$('#psheet').hidden)closePanel();
     }
-    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom], .row[data-dopen]')){e.preventDefault();e.target.click();}
+    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom], .row[data-dopen], .row[data-ivopen]')){e.preventDefault();e.target.click();}
   });
   $('#month').onclick=openSummary;
   $('#q-note').addEventListener('input',function(){renderNotes();applyNoteCat();});
@@ -1346,6 +1875,20 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
   ['pointerup','pointerleave','pointercancel'].forEach(function(ev){$('#q-cats').addEventListener(ev,function(){clearTimeout(lpTimer);});});
   try{$('#btab').open=localStorage.getItem('gastos:btab')==='1';}catch(e){}
   $('#btab').addEventListener('toggle',function(){try{localStorage.setItem('gastos:btab',$('#btab').open?'1':'0');}catch(e){}});
+  $('#iv-add').onclick=function(){openIvForm(null);};
+  $('#iv-rate').onclick=openRate;
+  $('#iv-all').onclick=openIvAll;
+  $('#iva-save').onclick=ivAllSave;
+  $('#ivf-qty').addEventListener('input',updateValLabel);
+  $('#ivd-edit').onclick=function(){openIvForm(ivOpenId);};
+  $('#ivd-upd').onclick=ivUpdateValue;
+  $('#ivd-val').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();ivUpdateValue();}});
+  $('#ivf-save').onclick=saveIvForm;
+  $('#ivf-del').onclick=deleteIv;
+  $('#r-save').onclick=saveRate;
+  $('#r-in').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveRate();}});
+  try{$('#ivtab').open=localStorage.getItem('gastos:ivtab')==='1';}catch(e){}
+  $('#ivtab').addEventListener('toggle',function(){try{localStorage.setItem('gastos:ivtab',$('#ivtab').open?'1':'0');}catch(e){}if($('#ivtab').open){ivSnapIfNeeded();autoDolar();}});
   $('#d-add').onclick=function(){openDForm(null);};
   $('#d-edit').onclick=function(){openDForm(dOpenId);};
   $('#d-payb').onclick=addPayment;
