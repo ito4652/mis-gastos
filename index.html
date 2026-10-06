@@ -292,6 +292,8 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
 .iva-dap{display:flex;flex-direction:column;gap:2px;padding:10px 12px;margin-bottom:12px;background:var(--chip-bg);border-radius:12px;font-size:14px}
 .iva-dap span{color:var(--muted)}
 
+.ent[data-edit],.ent[data-aedit]{cursor:pointer}
+
 .backup{margin-top:20px;padding:14px 16px;border:1px solid var(--line);background:var(--card);border-radius:16px}
 .backup .bt{font-weight:600;margin-bottom:2px}
 .backup .note{margin:0 0 10px;font-size:13px;color:var(--muted)}
@@ -520,6 +522,14 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     <label class="fld"><span>Pesos por dólar</span><input id="r-in" inputmode="decimal" autocomplete="off" placeholder="Ej: 928,5"></label>
     <button type="button" class="autobtn" data-fetchrate>Traer el dólar automáticamente</button>
     <div class="actions"><button class="btn-save" id="r-save" type="button">Guardar</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="bsheet" hidden>
+  <div class="scrim" data-bclose></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+    <div class="p-top"><h3 id="bk-title"></h3><button class="xbtn" data-bclose aria-label="Cerrar">✕</button></div>
+    <div id="bk-body"></div>
   </div>
 </div>
 
@@ -814,24 +824,26 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       return '<li class="row" tabindex="0" role="button" data-open="'+esc(v.id)+'"><div class="main"><span class="name">'+esc(v.name)+'</span></div><span class="amt'+(tot?'':' muted')+'">'+(privG?MASK:(tot?money(tot):'Sin gastos'))+'</span><span class="chev">›</span></li>';
     }).join(''):'<li class="row empty">Aún no hay categorías</li>';
     renderBankTab();
+    if(!$('#bsheet').hidden)renderBankDetail();
     renderDebts();
     renderInv();
     if(!$('#psheet').hidden)renderPanel();
   }
 
   /* ---------- totales por banco ---------- */
+  var bkOpen=null;
   function bankTotals(){
-    var a=allowItem(), vids={}, map={}, none={amt:0,n:0};
+    var a=allowItem(), vids={}, map={}, none={amt:0,n:0,items:[]};
     data.variable.forEach(function(v){vids[v.id]=1;});
-    function add(bank,amt){
+    function add(bank,amt,it){
       var k=String(bank||'').trim();
-      if(!k){none.amt+=amt;none.n++;return;}
+      if(!k){none.amt+=amt;none.n++;none.items.push(it);return;}
       var key=k.toLowerCase();
-      var o=map[key]=map[key]||{label:k,amt:0,n:0};
-      o.amt+=amt;o.n++;
+      var o=map[key]=map[key]||{key:key,label:k,amt:0,n:0,items:[]};
+      o.amt+=amt;o.n++;o.items.push(it);
     }
-    data.entries.forEach(function(e){if((e.src==='allow'&&a)||vids[e.src])add(e.bank,Number(e.amount)||0);});
-    data.fixed.forEach(function(i){if(i!==a&&i.paid&&String(i.card||'').trim())add(i.card,Number(i.amount)||0);});
+    data.entries.forEach(function(e){if((e.src==='allow'&&a)||vids[e.src])add(e.bank,Number(e.amount)||0,{t:'e',e:e});});
+    data.fixed.forEach(function(i){if(i!==a&&i.paid&&String(i.card||'').trim())add(i.card,Number(i.amount)||0,{t:'f',i:i});});
     var order=[];
     (banksList||[]).forEach(function(b){var k=b.toLowerCase();if(order.indexOf(k)<0)order.push(k);});
     Object.keys(map).forEach(function(k){if(order.indexOf(k)<0)order.push(k);});
@@ -839,17 +851,58 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       var o=map[k];
       if(o)return o;
       var lab=(banksList||[]).filter(function(b){return b.toLowerCase()===k;})[0]||k;
-      return {label:lab,amt:0,n:0};
+      return {key:k,label:lab,amt:0,n:0,items:[]};
     });
     return {rows:rows,none:none};
   }
   function renderBankTab(){
     var bt=bankTotals(), h='';
     bt.rows.forEach(function(r){
-      h+='<li class="row static"><div class="main"><span class="name">'+esc(r.label)+'</span><span class="sub">'+(r.n?r.n+' '+(r.n===1?'movimiento':'movimientos'):'Sin movimientos')+'</span></div><span class="amt'+(r.amt?'':' muted')+'">'+(privG?MASK:money(r.amt))+'</span></li>';
+      h+='<li class="row" tabindex="0" role="button" data-bopen="'+esc(r.key)+'"><div class="main"><span class="name">'+esc(r.label)+'</span><span class="sub">'+(r.n?r.n+' '+(r.n===1?'movimiento':'movimientos'):'Sin movimientos')+'</span></div><span class="amt'+(r.amt?'':' muted')+'">'+(privG?MASK:money(r.amt))+'</span><span class="chev">›</span></li>';
     });
-    if(bt.none.n)h+='<li class="row static"><div class="main"><span class="name muted">Sin banco</span><span class="sub">'+bt.none.n+' '+(bt.none.n===1?'movimiento':'movimientos')+'</span></div><span class="amt muted">'+(privG?MASK:money(bt.none.amt))+'</span></li>';
+    if(bt.none.n)h+='<li class="row" tabindex="0" role="button" data-bopen="__none"><div class="main"><span class="name muted">Sin banco</span><span class="sub">'+bt.none.n+' '+(bt.none.n===1?'movimiento':'movimientos')+'</span></div><span class="amt muted">'+(privG?MASK:money(bt.none.amt))+'</span><span class="chev">›</span></li>';
     $('#bank-list').innerHTML=h||'<li class="row static empty">Aún no hay bancos. Agrégalos al anotar un gasto.</li>';
+  }
+  function openBankDetail(key){bkOpen=key;renderBankDetail();if(bkOpen!==null)$('#bsheet').hidden=false;}
+  function closeBankDetail(){$('#bsheet').hidden=true;bkOpen=null;}
+  function srcLabel(e){
+    if(e.src==='allow'){var it=allowItem(), n=it?it.name:'Mesada';return e.cat?n+' · '+e.cat:n;}
+    return srcName(e.src);
+  }
+  function renderBankDetail(){
+    var bt=bankTotals();
+    var r=bkOpen==='__none'?{label:'Sin banco',amt:bt.none.amt,n:bt.none.n,items:bt.none.items}:bt.rows.filter(function(x){return x.key===bkOpen;})[0];
+    if(!r){closeBankDetail();return;}
+    $('#bk-title').textContent=r.label;
+    var h='<div class="a-lbl">Usado en '+MONTHS[m]+'</div><div class="a-big plain">'+(privG?'$ ••••••':money(r.amt))+'</div><div class="a-sub">'+r.n+' '+(r.n===1?'movimiento':'movimientos')+'</div>';
+    var ents=r.items.filter(function(x){return x.t==='e';}).map(function(x){return x.e;});
+    var fx=r.items.filter(function(x){return x.t==='f';}).map(function(x){return x.i;});
+    // ¿dónde se usó?
+    var org={};
+    ents.forEach(function(e){var k='s:'+e.src;var o=org[k]=org[k]||{l:e.src==='allow'?(allowItem()?allowItem().name:'Mesada'):srcName(e.src),amt:0};o.amt+=Number(e.amount)||0;});
+    if(fx.length)org.fijos={l:'Gastos fijos',amt:sum(fx)};
+    var ol=Object.keys(org).map(function(k){return org[k];}).sort(function(a,b){return b.amt-a.amt;});
+    if(ol.length>1){
+      h+='<div class="a-list-h">¿Dónde se usó?</div><div style="margin-top:6px">'+ol.map(function(o){return '<div class="cs-h" style="padding:5px 2px"><span>'+esc(o.l)+'</span><b>'+(privG?MASK:money(o.amt))+'</b></div>';}).join('')+'</div>';
+    }
+    // movimientos por día
+    h+='<div class="a-list-h">Movimientos</div>';
+    var groups={};
+    ents.forEach(function(e){(groups[e.date]=groups[e.date]||[]).push(e);});
+    var days=Object.keys(groups).sort().reverse();
+    days.forEach(function(d){
+      var its=groups[d].slice().reverse();
+      h+='<details class="day" open><summary><span>'+dayLabel(d)+'</span><b>'+(privG?MASK:money(sum(its)))+'</b></summary><ul>'
+        +its.map(function(e){return '<li class="ent" tabindex="0" role="button" data-aedit="'+esc(e.id)+'"><span class="n"><span class="t">'+esc(e.note||srcLabel(e))+'</span>'+(e.note?'<span class="m">'+esc(srcLabel(e))+'</span>':'')+'</span><span>'+(privG?MASK:money(e.amount))+'</span></li>';}).join('')
+        +'</ul></details>';
+    });
+    if(fx.length){
+      h+='<details class="day" open><summary><span>Gastos fijos pagados</span><b>'+(privG?MASK:money(sum(fx)))+'</b></summary><ul>'
+        +fx.map(function(i){return '<li class="ent" tabindex="0" role="button" data-edit="fixed:'+esc(i.id)+'"><span class="n"><span class="t">'+esc(i.name)+'</span><span class="m">Gasto fijo</span></span><span>'+(privG?MASK:money(i.amount))+'</span></li>';}).join('')
+        +'</ul></details>';
+    }
+    if(!days.length&&!fx.length)h+='<p class="sub" style="padding:8px 4px">Sin movimientos este mes.</p>';
+    $('#bk-body').innerHTML=h;
   }
 
   /* ---------- deudas ---------- */
@@ -1830,6 +1883,9 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
     if(idp){ivfDap=idp.dataset.idap==='yes';renderIvForm();return;}
     var ivc=e.target.closest('[data-icur]');
     if(ivc){ivfCur=ivc.dataset.icur;ivfCurTouched=true;renderIvForm();return;}
+    var bo=e.target.closest('[data-bopen]');
+    if(bo){openBankDetail(bo.dataset.bopen);return;}
+    if(e.target.closest('[data-bclose]')){closeBankDetail();return;}
     var dd=e.target.closest('[data-ddir]');
     if(dd){dDir=dd.dataset.ddir;renderDebts();return;}
     var dop=e.target.closest('[data-dopen]');
@@ -1857,11 +1913,12 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:
       else if(!$('#ivdetail').hidden)closeIvDetail();
       else if(!$('#dform').hidden)closeDForm();
       else if(!$('#dsheet').hidden)closeDebt();
+      else if(!$('#bsheet').hidden)closeBankDetail();
       else if(!$('#ssheet').hidden)closeSummary();
       else if(sheet)closeSheet();
       else if(!$('#psheet').hidden)closePanel();
     }
-    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom], .row[data-dopen], .row[data-ivopen]')){e.preventDefault();e.target.click();}
+    if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.row[data-edit], .row[data-open], .ent[data-aedit], .srow[data-gom], .row[data-dopen], .row[data-bopen], .ent[data-edit], .row[data-ivopen]')){e.preventDefault();e.target.click();}
   });
   $('#month').onclick=openSummary;
   $('#q-note').addEventListener('input',function(){renderNotes();applyNoteCat();});
